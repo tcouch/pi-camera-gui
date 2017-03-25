@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 
 import pygame
-#from picamera import PiCamera
+from picamera import PiCamera
 from time import sleep
 import sys
 #from gpiozero import Button
@@ -17,8 +17,10 @@ pygame.font.init()
 print(pygame.display.Info())
 X=pygame.display.Info().current_w
 Y=pygame.display.Info().current_h
-#screen = pygame.display.set_mode((X,Y),pygame.FULLSCREEN)
-screen = pygame.display.set_mode((X,Y))
+screen = pygame.display.set_mode((X,Y),pygame.FULLSCREEN)
+#Setup camera
+camera = PiCamera()
+camera.rotation = 270
 #Other variables
 black = (0,0,0)
 white = (255,255,255)
@@ -46,9 +48,8 @@ def display_ready_screen():
     TextRect.center = ((X/2),(Y/2))
     screen.blit(TextSurf, TextRect)
     pygame.display.update()
-    pressed = wait_for_input()
-    if pressed == pygame.K_ESCAPE: sys.exit()
-    else: display_count_down()
+    wait_for_touch()
+    display_count_down()
 
 def wait_for_input():
     while True:
@@ -68,8 +69,8 @@ def display_count_down():
     for i in range(5,1,-1):
         screen.fill(countdown_bg)
         text = str(i)
-    	TextSurf, TextRect = text_objects(text, largeText)
-    	TextRect.center = ((X/2),(Y/2))
+        TextSurf, TextRect = text_objects(text, largeText)
+        TextRect.center = ((X/2),(Y/2))
     	screen.blit(TextSurf, TextRect)
     	pygame.display.update()
         sleep(1)
@@ -83,7 +84,10 @@ def display_count_down():
     take_photo()
 
 def take_photo():
-    print("Pretend this takes a photo")
+    camera.start_preview()
+    sleep(2)
+    camera.capture('images/tom.jpg')
+    camera.stop_preview()
     decide()
 
 def discard_image():
@@ -136,7 +140,7 @@ class button(object):
 
 def decide():
     screen.fill(decide_bg)
-    image = pygame.image.load('resources/tom1.jpg')
+    image = pygame.image.load('images/tom.jpg')
     ix,iy = image.get_size()
     scale_factor = X/float(ix)
     screen.blit(pygame.transform.scale(image, (X,int(scale_factor*iy))), (0,0))
