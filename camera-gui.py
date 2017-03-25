@@ -17,8 +17,8 @@ pygame.font.init()
 print(pygame.display.Info())
 X=pygame.display.Info().current_w
 Y=pygame.display.Info().current_h
-screen = pygame.display.set_mode((X,Y),pygame.FULLSCREEN)
-
+#screen = pygame.display.set_mode((X,Y),pygame.FULLSCREEN)
+screen = pygame.display.set_mode((X,Y))
 #Other variables
 black = (0,0,0)
 white = (255,255,255)
@@ -28,6 +28,8 @@ decide_bg = (15,180,80)
 discard_bg = (255,0,0)
 saved_bg = (0,255,0)
 font1 = 'resources/Quicksand-Regular.otf'
+
+
 
 def set_display(dim=(640,400)):
     return pygame.display.set_mode(dim)
@@ -53,6 +55,13 @@ def wait_for_input():
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
                 return event.key
+
+def wait_for_touch():
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.MOUSEBUTTONUP:
+                return pygame.mouse.get_pos()
+
 
 def display_count_down():
     largeText = pygame.font.Font(font1,115)
@@ -99,53 +108,78 @@ def save_image():
     sleep(2)
     display_ready_screen()
 
+class button(object):
+    def __init__(self,**kwargs):
+        self.name = kwargs["name"]
+        self.dimensions = kwargs["dimensions"]
+        self.x1 = kwargs["x1"]
+        self.y1 = kwargs["y1"]
+        self.x2 = self.x1 + self.dimensions[0]
+        self.y2 = self.y1 + self.dimensions[1]
+        self.function = kwargs["function"]
+        self.colour = kwargs["colour"]
+        self.surface = self.create_surface()
+
+    def create_surface(self):
+        surface = pygame.Surface(self.dimensions)
+        surface.fill(self.colour)
+        return surface
+
+    def touched(self,touch_pos):
+        if self.x1 <= touch_pos[0] <= self.x2:
+            if self.y1 <= touch_pos[1] <= self.y2:
+                return True
+        else: return False
+
+    def show(self):
+        screen.blit(self.surface, (self.x1,self.y1))
+
 def decide():
     screen.fill(decide_bg)
-    box1 = pygame.Surface((int(X/3),int(Y/10)))
-    box1.fill((255,255,0))
-    box2 = pygame.Surface((int(X/3),int(Y/10)))
-    box2.fill((255,0,0))
-    box3 = pygame.Surface((int(X/3),int(Y/10)))
-    box3.fill((0,255,0))
     image = pygame.image.load('resources/tom1.jpg')
     ix,iy = image.get_size()
     scale_factor = X/float(ix)
     screen.blit(pygame.transform.scale(image, (X,int(scale_factor*iy))), (0,0))
-    screen.blit(box1, (int(X/3),Y-int(Y/10)))
-    screen.blit(box2, (0,Y-int(Y/10)))
-    screen.blit(box3, (int(2*X/3),Y-int(Y/10)))
+    buttons = {
+        "accept": button(**accept_button_config),
+        "reject": button(**reject_button_config),
+        "exit": button(**exit_button_config)
+        }
+    for k,v in buttons.items(): v.show()
     pygame.display.update()
-    pressed = wait_for_input()
-    if pressed == pygame.K_LEFT:
-        discard_image()
-    elif pressed == pygame.K_RIGHT:
-        save_image()
-    else: sys.exit()
+    while True:
+        touch_pos = wait_for_touch()
+        for k,v in buttons.items():
+            if v.touched(touch_pos):
+                v.function()
 
+#Button settings
+reject_button_config = {
+    "name": "reject",
+    "dimensions": (int(X/3),int(Y/10)),
+    "x1": 0,
+    "y1": Y-int(Y/10),
+    "colour": (255,0,0),
+    "function": discard_image
+    }
+
+accept_button_config = {
+    "name": "accept",
+    "dimensions": (int(X/3),int(Y/10)),
+    "x1": int(2*X/3),
+    "y1": Y-int(Y/10),
+    "colour": (0,255,0),
+    "function": save_image
+    }
+
+exit_button_config = {
+    "name": "exit",
+    "dimensions": (int(Y/10),int(Y/10)),
+    "x1": 0,
+    "y1": 0,
+    "colour": (255,255,255),
+    "function": sys.exit
+    }
     
 
 display_ready_screen()
-
-#screen.fill((0,200,50))
-#pygame.display.flip()
-#sleep(2)
-#screen.fill((100,20,50))
-#image = pygame.image.load('ball.jpg')
-#screen.blit(image, (20,20))
-#pygame.display.flip()
-#sleep(2)
-#screen.fill((80,20,200))
-#screen.blit(pygame.transform.scale(image, (500,500)), (50,50))
-#box1 = pygame.Surface((int(X/3),int(Y/10)))
-#box1.fill((255,255,0))
-#box2 = pygame.Surface((int(X/3),int(Y/10)))
-#box2.fill((255,0,0))
-#box3 = pygame.Surface((int(X/3),int(Y/10)))
-#box3.fill((0,255,0))
-#screen.blit(box1, (int(X/3),Y-int(Y/10)))
-#screen.blit(box2, (0,Y-int(Y/10)))
-#screen.blit(box3, (int(2*X/3),Y-int(Y/10)))
-#pygame.display.flip()
-#sleep(2)
-
-
