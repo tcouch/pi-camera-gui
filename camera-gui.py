@@ -4,7 +4,8 @@ import pygame
 from picamera import PiCamera
 from time import sleep
 import sys
-import io
+from io import BytesIO
+from datetime import datetime as dt
 #from gpiozero import Button
 
 #Setup buttons
@@ -68,7 +69,7 @@ def wait_for_touch():
 
 
 def take_photo():
-    img_stream = io.BytesIO()
+    img_stream = BytesIO()
     largeText = pygame.font.Font(font1,115)
     camera.start_preview()
     camera.preview.alpha = 128
@@ -96,7 +97,8 @@ def discard_image(image):
     display_ready_screen()
 
 def save_image(image):
-    pygame.image.save(image, 'images/current_photo.jpg')
+    filename = "images/" + dt.now().strftime("%Y%m%d-%H%M%S") + ".jpg"
+    pygame.image.save(image, filename)
     screen.fill(saved_bg)
     largeText = pygame.font.Font(font1,115)
     text = "IMAGE SAVED"
