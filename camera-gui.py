@@ -4,6 +4,7 @@ import pygame
 from picamera import PiCamera
 from time import sleep
 import sys
+import io
 #from gpiozero import Button
 
 #Setup buttons
@@ -14,6 +15,7 @@ import sys
 #Setup pygame screen
 pygame.display.init()
 pygame.font.init()
+#pygame.mouse.set_visible(False)
 print(pygame.display.Info())
 X=pygame.display.Info().current_w
 Y=pygame.display.Info().current_h
@@ -23,9 +25,10 @@ camera = PiCamera()
 camera.rotation = 270
 #Other variables
 black = (0,0,0)
-white = (255,255,255)
+white = (0,0,0)
 ready_bg = (15,80,180)
-countdown_bg = (180,80,15)
+countdown_bg = (255,255,255)
+#countdown_bg = (180,80,15)
 decide_bg = (15,180,80)
 discard_bg = (255,0,0)
 saved_bg = (0,255,0)
@@ -49,7 +52,7 @@ def display_ready_screen():
     screen.blit(TextSurf, TextRect)
     pygame.display.update()
     wait_for_touch()
-    display_count_down()
+    take_photo()
 
 def wait_for_input():
     while True:
@@ -64,33 +67,24 @@ def wait_for_touch():
                 return pygame.mouse.get_pos()
 
 
-def display_count_down():
+def take_photo():
+    img_stream = io.BytesIO()
     largeText = pygame.font.Font(font1,115)
-    for i in range(5,1,-1):
+    camera.start_preview()
+    camera.preview.alpha = 128
+    for i in range(3,0,-1):
         screen.fill(countdown_bg)
         text = str(i)
         TextSurf, TextRect = text_objects(text, largeText)
         TextRect.center = ((X/2),(Y/2))
     	screen.blit(TextSurf, TextRect)
-    	pygame.display.update()
+        pygame.display.update()
         sleep(1)
-    screen.fill(countdown_bg)
-    text = "1"
-    TextSurf, TextRect = text_objects(text, largeText)
-    TextRect.center = ((X/2),(Y/2))
-    screen.blit(TextSurf, TextRect)
-    pygame.display.update()
-    sleep(0.5)
-    take_photo()
-
-def take_photo():
-    camera.start_preview()
-    sleep(2)
-    camera.capture('images/tom.jpg')
+    camera.capture(img_stream,'jpeg')
     camera.stop_preview()
-    decide()
+    decide(img_stream)
 
-def discard_image():
+def discard_image(image):
     screen.fill(discard_bg)
     largeText = pygame.font.Font(font1,115)
     text = "IMAGE DISCARDED"
@@ -101,7 +95,8 @@ def discard_image():
     sleep(2)
     display_ready_screen()
 
-def save_image():
+def save_image(image):
+    pygame.image.save(image, 'images/current_photo.jpg')
     screen.fill(saved_bg)
     largeText = pygame.font.Font(font1,115)
     text = "IMAGE SAVED"
@@ -111,6 +106,9 @@ def save_image():
     pygame.display.update()
     sleep(2)
     display_ready_screen()
+
+def exit_gui(image):
+    sys.exit()
 
 class button(object):
     def __init__(self,**kwargs):
@@ -138,9 +136,10 @@ class button(object):
     def show(self):
         screen.blit(self.surface, (self.x1,self.y1))
 
-def decide():
+def decide(img_stream):
     screen.fill(decide_bg)
-    image = pygame.image.load('images/tom.jpg')
+    img_stream.seek(0)
+    image = pygame.image.load(img_stream)
     ix,iy = image.get_size()
     scale_factor = X/float(ix)
     screen.blit(pygame.transform.scale(image, (X,int(scale_factor*iy))), (0,0))
@@ -155,7 +154,7 @@ def decide():
         touch_pos = wait_for_touch()
         for k,v in buttons.items():
             if v.touched(touch_pos):
-                v.function()
+                v.function(image)
 
 #Button settings
 reject_button_config = {
@@ -182,7 +181,7 @@ exit_button_config = {
     "x1": 0,
     "y1": 0,
     "colour": (255,255,255),
-    "function": sys.exit
+    "function": exit_gui
     }
     
 
