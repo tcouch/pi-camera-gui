@@ -27,8 +27,9 @@ camera.rotation = 270
 #Other variables
 black = (0,0,0)
 white = (0,0,0)
+red = (255,0,0)
 ready_bg = (15,80,180)
-countdown_bg = (255,255,255)
+countdown_bg = (0,0,0)
 #countdown_bg = (180,80,15)
 decide_bg = (15,180,80)
 discard_bg = (255,0,0)
@@ -40,15 +41,15 @@ font1 = 'resources/Quicksand-Regular.otf'
 def set_display(dim=(640,400)):
     return pygame.display.set_mode(dim)
     
-def text_objects(text, font):
-    textSurface = font.render(text, True, black)
+def text_objects(text, font, colour):
+    textSurface = font.render(text, True, colour)
     return textSurface, textSurface.get_rect()
 
 def display_ready_screen():
     screen.fill(ready_bg)
     largeText = pygame.font.Font(font1,115)
     text = "READY"
-    TextSurf, TextRect = text_objects(text, largeText)
+    TextSurf, TextRect = text_objects(text, largeText, black)
     TextRect.center = ((X/2),(Y/2))
     screen.blit(TextSurf, TextRect)
     pygame.display.update()
@@ -76,7 +77,7 @@ def take_photo():
     for i in range(3,0,-1):
         screen.fill(countdown_bg)
         text = str(i)
-        TextSurf, TextRect = text_objects(text, largeText)
+        TextSurf, TextRect = text_objects(text, largeText, red)
         TextRect.center = ((X/2),(Y/2))
     	screen.blit(TextSurf, TextRect)
         pygame.display.update()
@@ -89,7 +90,7 @@ def discard_image(image):
     screen.fill(discard_bg)
     largeText = pygame.font.Font(font1,115)
     text = "IMAGE DISCARDED"
-    TextSurf, TextRect = text_objects(text, largeText)
+    TextSurf, TextRect = text_objects(text, largeText, black)
     TextRect.center = ((X/2),(Y/2))
     screen.blit(TextSurf, TextRect)
     pygame.display.update()
@@ -102,7 +103,7 @@ def save_image(image):
     screen.fill(saved_bg)
     largeText = pygame.font.Font(font1,115)
     text = "IMAGE SAVED"
-    TextSurf, TextRect = text_objects(text, largeText)
+    TextSurf, TextRect = text_objects(text, largeText, black)
     TextRect.center = ((X/2),(Y/2))
     screen.blit(TextSurf, TextRect)
     pygame.display.update()
