@@ -24,6 +24,7 @@ screen = pygame.display.set_mode((X,Y),pygame.FULLSCREEN)
 #Setup camera
 camera = PiCamera()
 camera.rotation = 270
+camera.resolution = (3280,2464)
 #Other variables
 black = (0,0,0)
 white = (0,0,0)
@@ -144,14 +145,18 @@ def decide(img_stream):
     img_stream.seek(0)
     image = pygame.image.load(img_stream)
     ix,iy = image.get_size()
-    scale_factor = X/float(ix)
-    screen.blit(pygame.transform.scale(image, (X,int(scale_factor*iy))), (0,0))
+    scale_factor = Y/float(iy)
+    jx = int(scale_factor*ix)
+    jy = int(scale_factor*iy)
+    xoffset = int((X-jx)/2)
     buttons = {
         "accept": button(**accept_button_config),
-        "reject": button(**reject_button_config),
-        "exit": button(**exit_button_config)
+        "reject": button(**reject_button_config)
         }
     for k,v in buttons.items(): v.show()
+    stop = button(**exit_button_config)
+    stop.show()   
+    screen.blit(pygame.transform.scale(image, (jx,jy)), (xoffset,0))
     pygame.display.update()
     while True:
         touch_pos = wait_for_touch()
@@ -162,20 +167,22 @@ def decide(img_stream):
 #Button settings
 reject_button_config = {
     "name": "reject",
-    "dimensions": (int(X/3),int(Y/10)),
+    "dimensions": (int(X/8),Y),
     "x1": 0,
-    "y1": Y-int(Y/10),
+    "y1": 0,
     "colour": (255,0,0),
-    "function": discard_image
+    "function": discard_image,
+    "text": "Discard"
     }
 
 accept_button_config = {
     "name": "accept",
-    "dimensions": (int(X/3),int(Y/10)),
-    "x1": int(2*X/3),
-    "y1": Y-int(Y/10),
+    "dimensions": (int(X/8),Y),
+    "x1": int(7*X/8),
+    "y1": 0,
     "colour": (0,255,0),
-    "function": save_image
+    "function": save_image,
+    "text": "Keep"
     }
 
 exit_button_config = {
