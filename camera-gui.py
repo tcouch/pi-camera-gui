@@ -11,7 +11,8 @@ from datetime import datetime as dt
 #Setup pygame screen
 pygame.display.init()
 pygame.freetype.init()
-#pygame.mouse.set_visible(False)
+#Make cursor transparent
+pygame.mouse.set_cursor((8,8),(0,0),(0,0,0,0,0,0,0,0),(0,0,0,0,0,0,0,0))
 print(pygame.display.Info())
 X=pygame.display.Info().current_w
 Y=pygame.display.Info().current_h
@@ -33,18 +34,11 @@ white = (0,0,0)
 red = (255,0,0)
 ready_bg = (15,80,180)
 countdown_bg = (0,0,0)
-#countdown_bg = (180,80,15)
-#decide_bg = (43,87,151)
 decide_bg = (0,0,0)
 delete_bg = (218,83,44)
 save_bg = (0,163,0)
 font1 = 'resources/Quicksand-Regular.otf'
 
-
-
-def set_display(dim=(640,400)):
-    return pygame.display.set_mode(dim)
-    
 def wait_for_input():
     while True:
         for event in pygame.event.get():
@@ -64,6 +58,7 @@ def take_photo():
     camera.preview.alpha = 128
     for i in range(3,0,-1):
         screen.fill(countdown_bg)
+        screen.set_alpha(0)
         text = str(i)
         txtSurf, txtRect = largeText.render(text, red)
         txtRect.center = ((X/2),(Y/2))
