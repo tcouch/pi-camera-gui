@@ -34,8 +34,8 @@ countdown_bg = (0,0,0)
 #countdown_bg = (180,80,15)
 #decide_bg = (43,87,151)
 decide_bg = (0,0,0)
-discard_bg = (218,83,44)
-saved_bg = (0,163,0)
+delete_bg = (218,83,44)
+save_bg = (0,163,0)
 font1 = 'resources/Quicksand-Regular.otf'
 
 def text_objects(text, font, colour):
@@ -57,10 +57,6 @@ def wait_for_touch():
 def exit_gui(image):
     sys.exit()
     
-def save_image(image):
-    print("Image saved")
-    decide()
-
 def discard_image(image):
     print("Image discarded")
     decide()
@@ -100,7 +96,6 @@ class button(object):
     def add_text(self):
         print("Adding text: {0}".format(self.text))
         smallFont = pygame.freetype.Font(font1,50)
-        smallFont.vertical = True
         accross = self.x1 + self.width/2
         down = self.y1 + self.height/2
         txtSurf, txtRect = smallFont.render(self.text)
@@ -125,6 +120,21 @@ class button(object):
         screen.blit(self.surface, (self.x1,self.y1))
         if self.dotext: screen.blit(self.txtSurf, self.txtRect)
 
+
+def ready():
+    bgPattern = pygame.image.load('resources/bg-pattern.jpg')
+    screen.blit(pygame.transform.scale(bgPattern, (X,Y)), (0,0))
+    capture = button(**capture_button_config)
+    capture.show()
+    pygame.display.update()
+    while True:
+        touch_pos = wait_for_touch()
+        if capture.touched(touch_pos):
+            capture.function()
+        
+def take_photo():
+    decide()
+
 def decide():
     #screen.fill(decide_bg)
     image = pygame.image.load('resources/pi-cam-v2-test.jpg')
@@ -143,8 +153,41 @@ def decide():
         for k,v in buttons.items():
             if v.touched(touch_pos):
                 v.function(image)
+                
+def save_image(image):
+    filename = "images/" + dt.now().strftime("%Y%m%d-%H%M%S") + ".jpg"
+    #pygame.image.save(image, filename)
+    bgPattern = pygame.image.load('resources/bg-pattern.jpg')
+    screen.blit(pygame.transform.scale(bgPattern, (X,Y)), (0,0))
+    message = button(**save_msg_config)
+    message.show()
+    pygame.display.update()
+    sleep(2)
+    ready()
+
+def discard_image(image):
+    bgPattern = pygame.image.load('resources/bg-pattern.jpg')
+    screen.blit(pygame.transform.scale(bgPattern, (X,Y)), (0,0))
+    message = button(**del_msg_config)
+    message.show()
+    pygame.display.update()
+    sleep(2)
+    ready()
 
 #Button settings
+
+capture_button_config = {
+    "name": "go",
+    "width": int(3/4*X),
+    "height": int(1/4*Y),
+    "x1": int(X/2 - 3/8*X),
+    "y1": int(Y/2 - 1/8*Y),
+    "colour": ready_bg,
+    "function": take_photo,
+    "text": "Take a photo"
+    #"image": "resources/camera.png"
+    }
+
 reject_button_config = {
     "name": "reject",
     "width": int(X - photo_display_width - 3 * margin),
@@ -153,7 +196,7 @@ reject_button_config = {
     "x1": photo_display_width + 2 * margin,
     "y1": int(X - photo_display_width - margin),
 #    "y1": Y/2 + margin/2,
-    "colour": discard_bg,
+    "colour": delete_bg,
     "function": discard_image,
     "image": "resources/delete.png"
     }
@@ -165,9 +208,31 @@ accept_button_config = {
 #    "height": int(Y/2 - 1.5*margin),
     "x1": photo_display_width + 2 * margin,
     "y1": margin,
-    "colour": saved_bg,
+    "colour": save_bg,
     "function": save_image,
     "image": "resources/like.png"
+    }
+
+save_msg_config = {
+    "name": "saved",
+    "width": int(3/4*X),
+    "height": int(1/4*Y),
+    "x1": int(X/2 - 3/8*X),
+    "y1": int(Y/2 - 1/8*Y),
+    "colour": save_bg,
+    "function": None,
+    "text": "The image is saved"
+    }
+    
+del_msg_config = {
+    "name": "deleted",
+    "width": int(3/4*X),
+    "height": int(1/4*Y),
+    "x1": int(X/2 - 3/8*X),
+    "y1": int(Y/2 - 1/8*Y),
+    "colour": delete_bg,
+    "function": None,
+    "text": "The image is gone"
     }
 
 exit_button_config = {
@@ -183,4 +248,4 @@ exit_button_config = {
     }
     
 
-decide()
+ready()
