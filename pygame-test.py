@@ -126,6 +126,8 @@ def ready():
     screen.blit(pygame.transform.scale(bgPattern, (X,Y)), (0,0))
     capture = button(**capture_button_config)
     capture.show()
+    capture_msg = button(**capture_msg_config)
+    capture_msg.show()
     pygame.display.update()
     while True:
         touch_pos = wait_for_touch()
@@ -178,15 +180,25 @@ def discard_image(image):
 
 capture_button_config = {
     "name": "go",
+    "width": int(X/8),
+    "height": int(X/8),
+    "x1": int(X/2 - X/16),
+    "y1": int(Y/2 + X/16),
+    "colour": ready_bg,
+    "function": take_photo,
+    "image": "resources/camera.png"
+    }
+    
+capture_msg_config = {
+    "name": "ready",
     "width": int(3/4*X),
     "height": int(1/4*Y),
     "x1": int(X/2 - 3/8*X),
-    "y1": int(Y/2 - 1/8*Y),
+    "y1": int(Y/4),
     "colour": ready_bg,
-    "function": take_photo,
-    "text": "Take a photo"
-    #"image": "resources/camera.png"
-    }
+    "function": None,
+    "text": "Take a photo!"
+}    
 
 reject_button_config = {
     "name": "reject",
