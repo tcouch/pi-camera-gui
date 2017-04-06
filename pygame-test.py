@@ -32,9 +32,10 @@ red = (255,0,0)
 ready_bg = (15,80,180)
 countdown_bg = (0,0,0)
 #countdown_bg = (180,80,15)
-decide_bg = (38,23,88)
-discard_bg = (128,21,31)
-saved_bg = (33,107,18)
+#decide_bg = (43,87,151)
+decide_bg = (0,0,0)
+discard_bg = (218,83,44)
+saved_bg = (0,163,0)
 font1 = 'resources/Quicksand-Regular.otf'
 
 def text_objects(text, font, colour):
@@ -103,7 +104,7 @@ class button(object):
         
     def add_image(self):
         img = pygame.image.load(self.imagefile)
-        img_dimensions = (int(1/2*self.width),int(1/2*self.width))
+        img_dimensions = (int(3/4*self.width),int(3/4*self.width))
         img_x = self.width/2 - img_dimensions[0]/2
         img_y = self.height/2 - img_dimensions[1]/2
         self.surface.blit(pygame.transform.scale(img,img_dimensions),(img_x,img_y))
@@ -159,7 +160,7 @@ accept_button_config = {
     "y1": margin,
     "colour": saved_bg,
     "function": save_image,
-    "image": "resources/good.png"
+    "image": "resources/like.png"
     }
 
 exit_button_config = {
@@ -170,7 +171,7 @@ exit_button_config = {
     "y1": int(2*(X - photo_display_width - 1.5 * margin)),
     "colour": (255,255,255),
     "function": exit_gui,
-    "image": "resources/exit.png"
+    "image": "resources/close.png"
     }
     
 
