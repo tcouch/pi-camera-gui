@@ -77,6 +77,10 @@ class button(object):
         self.y2 = self.y1 + self.height
         self.function = kwargs["function"]
         self.colour = kwargs["colour"]
+        if "alpha" in kwargs:
+            self.alpha = kwargs["alpha"]
+        else:
+            self.alpha = 220
         self.surface = self.create_surface()
         if "text" in kwargs:
             self.text = kwargs["text"]
@@ -90,6 +94,7 @@ class button(object):
     def create_surface(self):
         surface = pygame.Surface(self.dimensions)
         surface.fill(self.colour)
+        surface.set_alpha(self.alpha)
         return surface
     
     def add_text(self):
@@ -121,15 +126,17 @@ class button(object):
         if self.dotext: screen.blit(self.txtSurf, self.txtRect)
 
 def decide():
-    screen.fill(decide_bg)
+    #screen.fill(decide_bg)
     image = pygame.image.load('resources/pi-cam-v2-test.jpg')
+    bgPattern = pygame.image.load('resources/bg-pattern.jpg')
     buttons = {
         "accept": button(**accept_button_config),
         "reject": button(**reject_button_config),
         "exit": button(**exit_button_config)
         }
-    for k,v in buttons.items(): v.show()
+    screen.blit(pygame.transform.scale(bgPattern, (X,Y)), (0,0))
     screen.blit(pygame.transform.scale(image, photo_display_dims), (margin,margin))
+    for k,v in buttons.items(): v.show()
     pygame.display.update()
     while True:
         touch_pos = wait_for_touch()
@@ -171,7 +178,8 @@ exit_button_config = {
     "y1": int(2*(X - photo_display_width - 1.5 * margin)),
     "colour": (255,255,255),
     "function": exit_gui,
-    "image": "resources/close.png"
+    "image": "resources/close.png",
+    "alpha": None
     }
     
 
