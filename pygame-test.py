@@ -14,8 +14,16 @@ pygame.freetype.init()
 print(pygame.display.Info())
 X=800
 Y=480
+margin = 20
 #X=pygame.display.Info().current_w
 #Y=pygame.display.Info().current_h
+#camera.resolution = (3280,2464)
+photo_resolution = (3280,2464)
+photo_display_height = Y - 2*margin
+photo_scale_factor = photo_display_height / photo_resolution[1] 
+photo_display_width = int(photo_resolution[0] * photo_scale_factor)
+photo_display_dims = (photo_display_width,photo_display_height)
+
 screen = pygame.display.set_mode((X,Y))
 #Other variables
 black = (0,0,0)
@@ -24,10 +32,10 @@ red = (255,0,0)
 ready_bg = (15,80,180)
 countdown_bg = (0,0,0)
 #countdown_bg = (180,80,15)
-decide_bg = (15,180,80)
-discard_bg = (255,0,0)
-saved_bg = (0,255,0)
-font1 = 'Quicksand-Regular.otf'
+decide_bg = (38,23,88)
+discard_bg = (128,21,31)
+saved_bg = (33,107,18)
+font1 = 'resources/Quicksand-Regular.otf'
 
 def text_objects(text, font, colour):
     textSurface = font.render(text, colour)
@@ -59,11 +67,13 @@ def discard_image(image):
 class button(object):
     def __init__(self,**kwargs):
         self.name = kwargs["name"]
-        self.dimensions = kwargs["dimensions"]
+        self.width = kwargs["width"]
+        self.height = kwargs["height"]
+        self.dimensions = (self.width,self.height)
         self.x1 = kwargs["x1"]
         self.y1 = kwargs["y1"]
-        self.x2 = self.x1 + self.dimensions[0]
-        self.y2 = self.y1 + self.dimensions[1]
+        self.x2 = self.x1 + self.width
+        self.y2 = self.y1 + self.height
         self.function = kwargs["function"]
         self.colour = kwargs["colour"]
         self.surface = self.create_surface()
@@ -85,15 +95,18 @@ class button(object):
         print("Adding text: {0}".format(self.text))
         smallFont = pygame.freetype.Font(font1,50)
         smallFont.vertical = True
-        accross = self.x1 + self.dimensions[0]/2
-        down = self.y1 + self.dimensions[1]/2
+        accross = self.x1 + self.width/2
+        down = self.y1 + self.height/2
         txtSurf, txtRect = smallFont.render(self.text)
         txtRect.center = (accross,down)
         return txtSurf, txtRect
         
     def add_image(self):
         img = pygame.image.load(self.imagefile)
-        self.surface.blit(pygame.transform.scale(img,(50,50)),(40,200))
+        img_dimensions = (int(1/2*self.width),int(1/2*self.width))
+        img_x = self.width/2 - img_dimensions[0]/2
+        img_y = self.height/2 - img_dimensions[1]/2
+        self.surface.blit(pygame.transform.scale(img,img_dimensions),(img_x,img_y))
         return 0
     
     def touched(self,touch_pos):
@@ -108,18 +121,14 @@ class button(object):
 
 def decide():
     screen.fill(decide_bg)
-    image = pygame.image.load('pi-cam-v2-test.jpg')
-    ix,iy = image.get_size()
-    scale_factor = Y/float(iy)
-    jx = int(scale_factor*ix)
-    jy = int(scale_factor*iy)
-    xoffset = int((X-jx)/2)
+    image = pygame.image.load('resources/pi-cam-v2-test.jpg')
     buttons = {
         "accept": button(**accept_button_config),
-        "reject": button(**reject_button_config)
+        "reject": button(**reject_button_config),
+        "exit": button(**exit_button_config)
         }
     for k,v in buttons.items(): v.show()
-    screen.blit(pygame.transform.scale(image, (jx,jy)), (xoffset,0))
+    screen.blit(pygame.transform.scale(image, photo_display_dims), (margin,margin))
     pygame.display.update()
     while True:
         touch_pos = wait_for_touch()
@@ -130,31 +139,38 @@ def decide():
 #Button settings
 reject_button_config = {
     "name": "reject",
-    "dimensions": (int(X/8),Y),
-    "x1": 0,
-    "y1": 0,
-    "colour": (255,0,0),
+    "width": int(X - photo_display_width - 3 * margin),
+    "height": int(X - photo_display_width - 3 * margin),
+#    "height": int(Y/2 - 1.5*margin),
+    "x1": photo_display_width + 2 * margin,
+    "y1": int(X - photo_display_width - margin),
+#    "y1": Y/2 + margin/2,
+    "colour": discard_bg,
     "function": discard_image,
-    "text": "DISCARD"
+    "image": "resources/delete.png"
     }
 
 accept_button_config = {
     "name": "accept",
-    "dimensions": (int(X/8),Y),
-    "x1": int(7*X/8),
-    "y1": 0,
-    "colour": (0,255,0),
+    "width": int(X - photo_display_width - 3 * margin),
+    "height": int(X - photo_display_width - 3 * margin),
+#    "height": int(Y/2 - 1.5*margin),
+    "x1": photo_display_width + 2 * margin,
+    "y1": margin,
+    "colour": saved_bg,
     "function": save_image,
-    "image": "good.png"
+    "image": "resources/good.png"
     }
 
 exit_button_config = {
     "name": "exit",
-    "dimensions": (int(Y/10),int(Y/10)),
-    "x1": 0,
-    "y1": 0,
+    "width": int((X - photo_display_width - 3 * margin)/2),
+    "height": int((X - photo_display_width - 3 * margin)/2),
+    "x1": photo_display_width + 2 * margin,
+    "y1": int(2*(X - photo_display_width - 1.5 * margin)),
     "colour": (255,255,255),
-    "function": exit_gui
+    "function": exit_gui,
+    "image": "resources/exit.png"
     }
     
 
