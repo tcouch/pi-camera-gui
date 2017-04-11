@@ -24,49 +24,78 @@ DELETE_BG = (218, 83, 44)
 SAVE_BG = (0, 163, 0)
 DEFAULT_BUTTON_ALPHA = 220
 
-# Initialise display and set display parameters
-pygame.display.init()
-X = pygame.display.Info().current_w
-Y = pygame.display.Info().current_h
-screen = pygame.display.set_mode((X, Y), pygame.FULLSCREEN)
-photo_display_height = Y - 2 * MARGIN
-photo_scale_factor = photo_display_height / PHOTO_RESOLUTION[1]
-photo_display_width = int(PHOTO_RESOLUTION[0] * photo_scale_factor)
-photo_display_dims = (photo_display_width, photo_display_height)
-
-# Make cursor transparent
-pygame.mouse.set_cursor((8, 8), (0, 0),
-                        (0, 0, 0, 0, 0, 0, 0, 0),
-                        (0, 0, 0, 0, 0, 0, 0, 0))
-
-# Initialise freetype
-pygame.freetype.init()
-
-# Setup camera
-camera = PiCamera()
-camera.rotation = CAMERA_ROTATION
-camera.resolution = PHOTO_RESOLUTION
 
 class Controller:
     def __init__(self):
         self.model = Model()
         self.view = View(self.model)
+
+    def go(self):
+        self.view.show_ready_screen()
+        self.model.wait_for_touch()
+        self.model.camera.start_preview()
+        self.view.show_countdown()
+        self.model.take_photo()
+        self.model.camera.stop_preview()
+        self.view.show_decision_screen()
+        sleep(5)
+        sys.exit()
+        
+
+class Model:
+    def __init__(self):
+        self.setup_camera()
+        self.choice_buttons = {
+        "accept": Button(**accept_button_config),
+        "reject": Button(**reject_button_config),
+        "exit": Button(**exit_button_config)
+        }
+
+    def setup_camera(self):
+        self.camera = PiCamera()
+        self.camera.rotation = CAMERA_ROTATION
+        self.camera.resolution = PHOTO_RESOLUTION
+        self.camera.preview.alpha = 128
+
+    def take_photo(self):
+        img_stream = BytesIO()
+        self.camera.capture(img_stream, 'jpeg')
+        self.image = img_stream
+
+    def get_image(self):
+        self.image.seek(0)
+        return self.image
+
+    def wait_for_touch(self):
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.MOUSEBUTTONUP:
+                    return pygame.mouse.get_pos()
+
         
 class View:
     def __init__(self,model):
         self.model = model
         self.setup_display()
         self.photo_display_size = get_photo_display_size()
+        self.background = pygame.image.load(BG_PATTERN)
         
     def setup_display(self):
         pygame.display.init()
+        pygame.freetype.init()
         self.screen_width = pygame.display.Info().current_w
         self.screen_height = pygame.display.Info().current_h
-        self.screen_dimensions = (self.screen_width, self.screen_height)
-        self.screen = pygame.display.set_mode(self.screen_dimensions,
+        self.screen_size = (self.screen_width, self.screen_height)
+        self.screen = pygame.display.set_mode(self.screen_size,
                                               pygame.FULLSCREEN)
-        
-                                              
+        self.hide_cursor()
+
+    def hide_cursor(self):
+        # Make cursor transparent
+        pygame.mouse.set_cursor((8, 8), (0, 0),
+                                (0, 0, 0, 0, 0, 0, 0, 0),
+                                (0, 0, 0, 0, 0, 0, 0, 0))
+
     def get_photo_display_size(self):
         # Photo is full screen height minus margin top and bottom
         photo_display_height = self.screen_height - 2 * MARGIN
@@ -76,22 +105,48 @@ class View:
         photo_display_width = int(photo_resolution[0] * photo_scale_factor)
         return photo_display_width, photo_display_height
 
+    def reset_background(self):
+        scaled_background = pygame.transform.scale(self.background, self.screen_size)
+        self.screen.blit(scaled_background, (0, 0))
+
     def show_decision_screen(self):
-        background = pygame.image.load(BG_PATTERN)
-        photo = pygame.image.load(self.model.get_image())
-        buttons = {
-        "accept": Button(**accept_button_config),
-        "reject": Button(**reject_button_config),
-        "exit": Button(**exit_button_config)
-        }
-        screen.blit(pygame.transform.scale(background, self.screen_dimensions),
-                                           (0, 0))
-        screen.blit(pygame.transform.scale(image, photo_display_dims),
-                (MARGIN, MARGIN))
+        self.reset_background()
+        photo = pygame.image.load(self.model.get_image())        
+        scaled_photo = pygame.transform.scale(photo, self.photo_display_size)
+        photo_position = (MARGIN, MARGIN)
+        self.screen.blit(scaled_photo, photo_position)
+        buttons = self.model.choice_buttons
         for k, v in buttons.items():
             v.show()
         pygame.display.update()
-        
+
+    def show_ready_screen(self):
+        self.reset_background()
+        Button(**ready_button_config).show()
+        Button(**ready_msg_config).show()
+        pygame.display.update()
+
+    def show_saved_screen(self):
+        self.reset_background()
+        Button(**save_msg_config).show()
+        pygame.display.update()
+
+    def show_discard_screen(self):
+        self.reset_background()
+        Button(**del_msg_config).show()
+        pygame.display.update()
+
+    def show_countdown(self):
+        large_text = pygame.freetype.Font(FONT1, 115)
+        for i in range(3, 0, -1):
+            self.screen.fill(COUNTDOWN_BG)
+            self.screen.set_alpha(0)
+            text = str(i)
+            txt_surf, txt_rect = large_text.render(text, RED)
+            txt_rect.center = ((X/2), (Y/2))
+            self.screen.blit(txt_surf, txt_rect)
+            pygame.display.update()
+            sleep(1)
 
 
 class Button(object):
