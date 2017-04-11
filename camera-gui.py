@@ -47,6 +47,52 @@ camera = PiCamera()
 camera.rotation = CAMERA_ROTATION
 camera.resolution = PHOTO_RESOLUTION
 
+class Controller:
+    def __init__(self):
+        self.model = Model()
+        self.view = View(self.model)
+        
+class View:
+    def __init__(self,model):
+        self.model = model
+        self.setup_display()
+        self.photo_display_size = get_photo_display_size()
+        
+    def setup_display(self):
+        pygame.display.init()
+        self.screen_width = pygame.display.Info().current_w
+        self.screen_height = pygame.display.Info().current_h
+        self.screen_dimensions = (self.screen_width, self.screen_height)
+        self.screen = pygame.display.set_mode(self.screen_dimensions,
+                                              pygame.FULLSCREEN)
+        
+                                              
+    def get_photo_display_size(self):
+        # Photo is full screen height minus margin top and bottom
+        photo_display_height = self.screen_height - 2 * MARGIN
+        # Calculate desired display width to preserve aspect ratio
+        photo_resolution = self.model.camera.resolution
+        photo_scale_factor = photo_display_height / photo_resolution[1]
+        photo_display_width = int(photo_resolution[0] * photo_scale_factor)
+        return photo_display_width, photo_display_height
+
+    def show_decision_screen(self):
+        background = pygame.image.load(BG_PATTERN)
+        photo = pygame.image.load(self.model.get_image())
+        buttons = {
+        "accept": Button(**accept_button_config),
+        "reject": Button(**reject_button_config),
+        "exit": Button(**exit_button_config)
+        }
+        screen.blit(pygame.transform.scale(background, self.screen_dimensions),
+                                           (0, 0))
+        screen.blit(pygame.transform.scale(image, photo_display_dims),
+                (MARGIN, MARGIN))
+        for k, v in buttons.items():
+            v.show()
+        pygame.display.update()
+        
+
 
 class Button(object):
     def __init__(self, **kwargs):
