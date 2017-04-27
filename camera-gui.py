@@ -31,15 +31,28 @@ class Controller:
         self.view = View(self.model)
 
     def go(self):
-        self.view.show_ready_screen()
-        self.model.wait_for_touch()
-        self.model.camera.start_preview()
-        self.view.show_countdown()
-        self.model.take_photo()
-        self.model.camera.stop_preview()
-        self.view.show_decision_screen()
-        sleep(5)
-        sys.exit()
+        encore = True
+        while encore:
+            self.view.show_ready_screen()
+            self.model.wait_for_touch()
+            self.model.camera.start_preview()
+            self.view.show_countdown()
+            self.model.take_photo()
+            self.model.camera.stop_preview()
+            self.view.show_decision_screen()
+            touch = self.model.wait_for_touch()
+            for button in self.model.choice_buttons:
+                if button.touched(touch):
+                    response = button.response
+            if response == "save":
+                self.model.save_image()
+                self.view.show_saved_screen()
+            elif response == "discard":
+                self.model.discard_image()
+                self.view.show_discard_screen()
+            elif response == "exit":
+                encore = False
+            sleep(2)
         
 
 class Model:
@@ -71,6 +84,12 @@ class Model:
             for event in pygame.event.get():
                 if event.type == pygame.MOUSEBUTTONUP:
                     return pygame.mouse.get_pos()
+
+    def save_image(self):
+        pass
+
+    def discard_image(self):
+        pass
 
         
 class View:
@@ -159,7 +178,7 @@ class Button(object):
         self.y1 = kwargs["y1"]
         self.x2 = self.x1 + self.width
         self.y2 = self.y1 + self.height
-        self.function = kwargs["function"]
+        self.response = kwargs["function"]
         self.colour = kwargs["colour"]
         if "alpha" in kwargs:
             self.alpha = kwargs["alpha"]
@@ -308,7 +327,7 @@ ready_button_config = {
     "x1": int(X/2 - X/16),
     "y1": int(Y/2 + X/16),
     "colour": READY_BG,
-    "function": take_photo,
+    "function": None,
     "image": "resources/camera.png"
     }
 
@@ -330,7 +349,7 @@ reject_button_config = {
     "x1": photo_display_width + 2 * MARGIN,
     "y1": int(X - photo_display_width - MARGIN),
     "colour": DELETE_BG,
-    "function": discard_image,
+    "response": "discard",
     "image": "resources/delete.png"
     }
 
@@ -341,7 +360,7 @@ accept_button_config = {
     "x1": photo_display_width + 2 * MARGIN,
     "y1": MARGIN,
     "colour": SAVE_BG,
-    "function": save_image,
+    "response": "save",
     "image": "resources/like.png"
     }
 
@@ -352,7 +371,7 @@ save_msg_config = {
     "x1": int(X/2 - 3*X/8),
     "y1": int(Y/2 - Y/8),
     "colour": SAVE_BG,
-    "function": None,
+    "response": None,
     "text": "The image is saved"
     }
 
@@ -363,7 +382,7 @@ del_msg_config = {
     "x1": int(X/2 - 3*X/8),
     "y1": int(Y/2 - Y/8),
     "colour": DELETE_BG,
-    "function": None,
+    "response": None,
     "text": "The image is gone"
     }
 
@@ -374,10 +393,11 @@ exit_button_config = {
     "x1": photo_display_width + 2 * MARGIN,
     "y1": int(2*(X - photo_display_width - 1.5 * MARGIN)),
     "colour": (255, 255, 255),
-    "function": exit_gui,
+    "response": "exit",
     "image": "resources/close.png",
     "alpha": None
     }
 
-
-ready()
+if __name__=="__main__":
+    C = Controller()
+    C.go()
