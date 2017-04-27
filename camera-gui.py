@@ -23,6 +23,8 @@ DECIDE_BG = (0, 0, 0)
 DELETE_BG = (218, 83, 44)
 SAVE_BG = (0, 163, 0)
 DEFAULT_BUTTON_ALPHA = 220
+X = 800
+Y = 480
 
 
 class Controller:
@@ -68,7 +70,6 @@ class Model:
         self.camera = PiCamera()
         self.camera.rotation = CAMERA_ROTATION
         self.camera.resolution = PHOTO_RESOLUTION
-        self.camera.preview.alpha = 128
 
     def take_photo(self):
         img_stream = BytesIO()
@@ -96,7 +97,7 @@ class View:
     def __init__(self,model):
         self.model = model
         self.setup_display()
-        self.photo_display_size = get_photo_display_size()
+        self.photo_display_size = self.get_photo_display_size()
         self.background = pygame.image.load(BG_PATTERN)
         
     def setup_display(self):
@@ -136,23 +137,23 @@ class View:
         self.screen.blit(scaled_photo, photo_position)
         buttons = self.model.choice_buttons
         for k, v in buttons.items():
-            v.show()
+            v.show(self.screen)
         pygame.display.update()
 
     def show_ready_screen(self):
         self.reset_background()
-        Button(**ready_button_config).show()
-        Button(**ready_msg_config).show()
+        Button(**ready_button_config).show(self.screen)
+        Button(**ready_msg_config).show(self.screen)
         pygame.display.update()
 
     def show_saved_screen(self):
         self.reset_background()
-        Button(**save_msg_config).show()
+        Button(**save_msg_config).show(self.screen)
         pygame.display.update()
 
     def show_discard_screen(self):
         self.reset_background()
-        Button(**del_msg_config).show()
+        Button(**del_msg_config).show(self.screen)
         pygame.display.update()
 
     def show_countdown(self):
@@ -178,7 +179,7 @@ class Button(object):
         self.y1 = kwargs["y1"]
         self.x2 = self.x1 + self.width
         self.y2 = self.y1 + self.height
-        self.response = kwargs["function"]
+        self.response = kwargs["response"]
         self.colour = kwargs["colour"]
         if "alpha" in kwargs:
             self.alpha = kwargs["alpha"]
@@ -224,98 +225,98 @@ class Button(object):
         else:
             return False
 
-    def show(self):
+    def show(self, screen):
         screen.blit(self.surface, (self.x1, self.y1))
         if self.dotext:
             screen.blit(self.txt_surf, self.txt_rect)
 
 
-def wait_for_touch():
-    while True:
-        for event in pygame.event.get():
-            if event.type == pygame.MOUSEBUTTONUP:
-                return pygame.mouse.get_pos()
-
-
-def take_photo():
-    img_stream = BytesIO()
-    large_text = pygame.freetype.Font(FONT1, 115)
-    camera.start_preview()
-    camera.preview.alpha = 128
-    for i in range(3, 0, -1):
-        screen.fill(COUNTDOWN_BG)
-        screen.set_alpha(0)
-        text = str(i)
-        txt_surf, txt_rect = large_text.render(text, RED)
-        txt_rect.center = ((X/2), (Y/2))
-        screen.blit(txt_surf, txt_rect)
-        pygame.display.update()
-        sleep(1)
-    camera.capture(img_stream, 'jpeg')
-    camera.stop_preview()
-    decide(img_stream)
-
-
-def ready():
-    background = pygame.image.load(BG_PATTERN)
-    screen.blit(pygame.transform.scale(background, (X, Y)), (0, 0))
-    capture = Button(**ready_button_config)
-    capture.show()
-    capture_msg = Button(**ready_msg_config)
-    capture_msg.show()
-    pygame.display.update()
-    while True:
-        touch_pos = wait_for_touch()
-        if capture.touched(touch_pos):
-            capture.function()
-
-
-def decide(img_stream):
-    img_stream.seek(0)
-    image = pygame.image.load(img_stream)
-    background = pygame.image.load(BG_PATTERN)
-    buttons = {
-        "accept": Button(**accept_button_config),
-        "reject": Button(**reject_button_config),
-        "exit": Button(**exit_button_config)
-        }
-    screen.blit(pygame.transform.scale(background, (X, Y)), (0, 0))
-    screen.blit(pygame.transform.scale(image, photo_display_dims),
-                (MARGIN, MARGIN))
-    for k, v in buttons.items():
-        v.show()
-    pygame.display.update()
-    while True:
-        touch_pos = wait_for_touch()
-        for k, v in buttons.items():
-            if v.touched(touch_pos):
-                v.function(image)
-
-
-def save_image(image):
-    filename = "images/" + dt.now().strftime("%Y%m%d-%H%M%S") + ".jpg"
-    pygame.image.save(image, filename)
-    background = pygame.image.load(BG_PATTERN)
-    screen.blit(pygame.transform.scale(background, (X, Y)), (0, 0))
-    message = Button(**save_msg_config)
-    message.show()
-    pygame.display.update()
-    sleep(2)
-    ready()
-
-
-def discard_image(image):
-    background = pygame.image.load(BG_PATTERN)
-    screen.blit(pygame.transform.scale(background, (X, Y)), (0, 0))
-    message = Button(**del_msg_config)
-    message.show()
-    pygame.display.update()
-    sleep(2)
-    ready()
-
-
-def exit_gui(image):
-    sys.exit()
+##def wait_for_touch():
+##    while True:
+##        for event in pygame.event.get():
+##            if event.type == pygame.MOUSEBUTTONUP:
+##                return pygame.mouse.get_pos()
+##
+##
+##def take_photo():
+##    img_stream = BytesIO()
+##    large_text = pygame.freetype.Font(FONT1, 115)
+##    camera.start_preview()
+##    camera.preview.alpha = 128
+##    for i in range(3, 0, -1):
+##        screen.fill(COUNTDOWN_BG)
+##        screen.set_alpha(0)
+##        text = str(i)
+##        txt_surf, txt_rect = large_text.render(text, RED)
+##        txt_rect.center = ((X/2), (Y/2))
+##        screen.blit(txt_surf, txt_rect)
+##        pygame.display.update()
+##        sleep(1)
+##    camera.capture(img_stream, 'jpeg')
+##    camera.stop_preview()
+##    decide(img_stream)
+##
+##
+##def ready():
+##    background = pygame.image.load(BG_PATTERN)
+##    screen.blit(pygame.transform.scale(background, (X, Y)), (0, 0))
+##    capture = Button(**ready_button_config)
+##    capture.show()
+##    capture_msg = Button(**ready_msg_config)
+##    capture_msg.show()
+##    pygame.display.update()
+##    while True:
+##        touch_pos = wait_for_touch()
+##        if capture.touched(touch_pos):
+##            capture.function()
+##
+##
+##def decide(img_stream):
+##    img_stream.seek(0)
+##    image = pygame.image.load(img_stream)
+##    background = pygame.image.load(BG_PATTERN)
+##    buttons = {
+##        "accept": Button(**accept_button_config),
+##        "reject": Button(**reject_button_config),
+##        "exit": Button(**exit_button_config)
+##        }
+##    screen.blit(pygame.transform.scale(background, (X, Y)), (0, 0))
+##    screen.blit(pygame.transform.scale(image, photo_display_dims),
+##                (MARGIN, MARGIN))
+##    for k, v in buttons.items():
+##        v.show()
+##    pygame.display.update()
+##    while True:
+##        touch_pos = wait_for_touch()
+##        for k, v in buttons.items():
+##            if v.touched(touch_pos):
+##                v.function(image)
+##
+##
+##def save_image(image):
+##    filename = "images/" + dt.now().strftime("%Y%m%d-%H%M%S") + ".jpg"
+##    pygame.image.save(image, filename)
+##    background = pygame.image.load(BG_PATTERN)
+##    screen.blit(pygame.transform.scale(background, (X, Y)), (0, 0))
+##    message = Button(**save_msg_config)
+##    message.show()
+##    pygame.display.update()
+##    sleep(2)
+##    ready()
+##
+##
+##def discard_image(image):
+##    background = pygame.image.load(BG_PATTERN)
+##    screen.blit(pygame.transform.scale(background, (X, Y)), (0, 0))
+##    message = Button(**del_msg_config)
+##    message.show()
+##    pygame.display.update()
+##    sleep(2)
+##    ready()
+##
+##
+##def exit_gui(image):
+##    sys.exit()
 
 
 # Button settings
@@ -327,7 +328,7 @@ ready_button_config = {
     "x1": int(X/2 - X/16),
     "y1": int(Y/2 + X/16),
     "colour": READY_BG,
-    "function": None,
+    "response": None,
     "image": "resources/camera.png"
     }
 
@@ -338,16 +339,15 @@ ready_msg_config = {
     "x1": int(X/2 - 3*X/8),
     "y1": int(Y/4),
     "colour": READY_BG,
-    "function": None,
     "text": "Take a photo!"
 }
 
 reject_button_config = {
     "name": "reject",
-    "width": int(X - photo_display_width - 3 * MARGIN),
-    "height": int(X - photo_display_width - 3 * MARGIN),
-    "x1": photo_display_width + 2 * MARGIN,
-    "y1": int(X - photo_display_width - MARGIN),
+    "width": 50,
+    "height": 50,
+    "x1": 720,
+    "y1": 90,
     "colour": DELETE_BG,
     "response": "discard",
     "image": "resources/delete.png"
@@ -355,10 +355,10 @@ reject_button_config = {
 
 accept_button_config = {
     "name": "accept",
-    "width": int(X - photo_display_width - 3 * MARGIN),
-    "height": int(X - photo_display_width - 3 * MARGIN),
-    "x1": photo_display_width + 2 * MARGIN,
-    "y1": MARGIN,
+    "width": 50,
+    "height": 50,
+    "x1": 720,
+    "y1": 20,
     "colour": SAVE_BG,
     "response": "save",
     "image": "resources/like.png"
@@ -388,15 +388,16 @@ del_msg_config = {
 
 exit_button_config = {
     "name": "exit",
-    "width": int((X - photo_display_width - 3 * MARGIN)/2),
-    "height": int((X - photo_display_width - 3 * MARGIN)/2),
-    "x1": photo_display_width + 2 * MARGIN,
-    "y1": int(2*(X - photo_display_width - 1.5 * MARGIN)),
+    "width": 20,
+    "height": 20,
+    "x1": 0,
+    "y1": 0,
     "colour": (255, 255, 255),
     "response": "exit",
     "image": "resources/close.png",
     "alpha": None
     }
+
 
 if __name__=="__main__":
     C = Controller()
