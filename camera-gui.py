@@ -42,10 +42,7 @@ class Controller:
             self.model.take_photo()
             self.model.camera.stop_preview()
             self.view.show_decision_screen()
-            touch = self.model.wait_for_touch()
-            for button in self.model.choice_buttons:
-                if button.touched(touch):
-                    response = button.response
+            response = self.get_decision()
             if response == "save":
                 self.model.save_image()
                 self.view.show_saved_screen()
@@ -55,7 +52,16 @@ class Controller:
             elif response == "exit":
                 encore = False
             sleep(2)
-        
+
+    def get_decision(self):
+        decided = False
+        while not decided:
+            touch = self.model.wait_for_touch()
+            for button in self.model.choice_buttons:
+                if button.touched(touch):
+                    response = button.response
+                    decided = True
+        return response
 
 class Model:
     def __init__(self):
