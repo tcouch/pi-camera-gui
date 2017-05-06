@@ -66,11 +66,11 @@ class Controller:
 class Model:
     def __init__(self):
         self.setup_camera()
-        self.choice_buttons = {
-        "accept": Button(**accept_button_config),
-        "reject": Button(**reject_button_config),
-        "exit": Button(**exit_button_config)
-        }
+        self.choice_buttons = [
+          Button(**accept_button_config),
+          Button(**reject_button_config),
+          Button(**exit_button_config)
+        ]
 
     def setup_camera(self):
         self.camera = PiCamera()
@@ -142,8 +142,8 @@ class View:
         photo_position = (MARGIN, MARGIN)
         self.screen.blit(scaled_photo, photo_position)
         buttons = self.model.choice_buttons
-        for k, v in buttons.items():
-            v.show(self.screen)
+        for button in buttons:
+            button.show(self.screen)
         pygame.display.update()
 
     def show_ready_screen(self):
@@ -345,7 +345,8 @@ ready_msg_config = {
     "x1": int(X/2 - 3*X/8),
     "y1": int(Y/4),
     "colour": READY_BG,
-    "text": "Take a photo!"
+    "text": "Take a photo!",
+    "response": None
 }
 
 reject_button_config = {
