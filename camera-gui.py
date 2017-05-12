@@ -9,11 +9,20 @@ from io import BytesIO
 from datetime import datetime as dt
 
 # Constants
+# Locations
+RESOURCES = "/home/pi/pi-camera-gui/resources/"
+FONT1 = RESOURCES + "Quicksand-Regular.otf"
+BG_PATTERN = RESOURCES + "bg-pattern.jpg"
+READY_IMG = RESOURCES + "camera.png"
+DELETE_IMG = RESOURCES + "delete.png"
+SAVE_IMG = RESOURCES + "like.png"
+CLOSE_IMG = RESOURCES + "close.png"
+SAVE_DIR = "~/Images/"
+# Camera settings
 CAMERA_ROTATION = 270
 PHOTO_RESOLUTION = (3280, 2464)
+# Display settings
 MARGIN = 20
-FONT1 = 'resources/Quicksand-Regular.otf'
-BG_PATTERN = 'resources/bg-pattern.jpg'
 BLACK = (0, 0, 0)
 WHITE = (0, 0, 0)
 RED = (255, 0, 0)
@@ -237,94 +246,6 @@ class Button(object):
             screen.blit(self.txt_surf, self.txt_rect)
 
 
-##def wait_for_touch():
-##    while True:
-##        for event in pygame.event.get():
-##            if event.type == pygame.MOUSEBUTTONUP:
-##                return pygame.mouse.get_pos()
-##
-##
-##def take_photo():
-##    img_stream = BytesIO()
-##    large_text = pygame.freetype.Font(FONT1, 115)
-##    camera.start_preview()
-##    camera.preview.alpha = 128
-##    for i in range(3, 0, -1):
-##        screen.fill(COUNTDOWN_BG)
-##        screen.set_alpha(0)
-##        text = str(i)
-##        txt_surf, txt_rect = large_text.render(text, RED)
-##        txt_rect.center = ((X/2), (Y/2))
-##        screen.blit(txt_surf, txt_rect)
-##        pygame.display.update()
-##        sleep(1)
-##    camera.capture(img_stream, 'jpeg')
-##    camera.stop_preview()
-##    decide(img_stream)
-##
-##
-##def ready():
-##    background = pygame.image.load(BG_PATTERN)
-##    screen.blit(pygame.transform.scale(background, (X, Y)), (0, 0))
-##    capture = Button(**ready_button_config)
-##    capture.show()
-##    capture_msg = Button(**ready_msg_config)
-##    capture_msg.show()
-##    pygame.display.update()
-##    while True:
-##        touch_pos = wait_for_touch()
-##        if capture.touched(touch_pos):
-##            capture.function()
-##
-##
-##def decide(img_stream):
-##    img_stream.seek(0)
-##    image = pygame.image.load(img_stream)
-##    background = pygame.image.load(BG_PATTERN)
-##    buttons = {
-##        "accept": Button(**accept_button_config),
-##        "reject": Button(**reject_button_config),
-##        "exit": Button(**exit_button_config)
-##        }
-##    screen.blit(pygame.transform.scale(background, (X, Y)), (0, 0))
-##    screen.blit(pygame.transform.scale(image, photo_display_dims),
-##                (MARGIN, MARGIN))
-##    for k, v in buttons.items():
-##        v.show()
-##    pygame.display.update()
-##    while True:
-##        touch_pos = wait_for_touch()
-##        for k, v in buttons.items():
-##            if v.touched(touch_pos):
-##                v.function(image)
-##
-##
-##def save_image(image):
-##    filename = "images/" + dt.now().strftime("%Y%m%d-%H%M%S") + ".jpg"
-##    pygame.image.save(image, filename)
-##    background = pygame.image.load(BG_PATTERN)
-##    screen.blit(pygame.transform.scale(background, (X, Y)), (0, 0))
-##    message = Button(**save_msg_config)
-##    message.show()
-##    pygame.display.update()
-##    sleep(2)
-##    ready()
-##
-##
-##def discard_image(image):
-##    background = pygame.image.load(BG_PATTERN)
-##    screen.blit(pygame.transform.scale(background, (X, Y)), (0, 0))
-##    message = Button(**del_msg_config)
-##    message.show()
-##    pygame.display.update()
-##    sleep(2)
-##    ready()
-##
-##
-##def exit_gui(image):
-##    sys.exit()
-
-
 # Button settings
 
 ready_button_config = {
@@ -335,7 +256,7 @@ ready_button_config = {
     "y1": int(Y/2 + X/16),
     "colour": READY_BG,
     "response": None,
-    "image": "resources/camera.png"
+    "image": READY_IMG
     }
 
 ready_msg_config = {
@@ -356,7 +277,7 @@ reject_button_config = {
     "y1": 90,
     "colour": DELETE_BG,
     "response": "discard",
-    "image": "resources/delete.png"
+    "image": DELETE_IMG
     }
 
 accept_button_config = {
@@ -367,7 +288,7 @@ accept_button_config = {
     "y1": 20,
     "colour": SAVE_BG,
     "response": "save",
-    "image": "resources/like.png"
+    "image": SAVE_IMG
     }
 
 save_msg_config = {
@@ -400,7 +321,7 @@ exit_button_config = {
     "y1": 0,
     "colour": (255, 255, 255),
     "response": "exit",
-    "image": "resources/close.png",
+    "image": CLOSE_IMG,
     "alpha": None
     }
 
