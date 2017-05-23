@@ -10,12 +10,21 @@ from io import BytesIO
 from datetime import datetime as dt
 
 # Constants
-COUNTDOWN = 5
+# Locations
+RESOURCES = "/home/pi/pi-camera-gui/resources/"
+FONT1 = RESOURCES + "Quicksand-Regular.otf"
+BG_PATTERN = RESOURCES + "bg-pattern.jpg"
+READY_IMG = RESOURCES + "camera.png"
+DELETE_IMG = RESOURCES + "delete.png"
+SAVE_IMG = RESOURCES + "like.png"
+CLOSE_IMG = RESOURCES + "close.png"
+SAVE_DIR = "/home/pi/pi-camera-gui/images/"
+# Camera settings
 CAMERA_ROTATION = 270
 PHOTO_RESOLUTION = (3280, 2464)
+# Display settings
+COUNTDOWN = 5
 MARGIN = 20
-FONT1 = '/home/pi/pi-camera-gui/resources/Quicksand-Regular.otf'
-BG_PATTERN = '/home/pi/pi-camera-gui/resources/bg-pattern.jpg'
 BLACK = (0, 0, 0)
 WHITE = (0, 0, 0)
 RED = (255, 0, 0)
@@ -96,7 +105,7 @@ class Model:
                     return pygame.mouse.get_pos()
 
     def save_image(self, image):
-        filename = "/home/pi/pi-camera-gui/images/" + dt.now().strftime("%Y%m%d-%H%M%S") + ".jpg"
+        filename = SAVE_DIR + dt.now().strftime("%Y%m%d-%H%M%S") + ".jpg"
         pygame.image.save(image, filename)
         return 0
 
@@ -255,7 +264,7 @@ ready_button_config = {
     "y1": int(Y/2 + X/16),
     "colour": READY_BG,
     "response": None,
-    "image": "/home/pi/pi-camera-gui/resources/camera.png"
+    "image": READY_IMG
     }
 
 ready_msg_config = {
@@ -277,7 +286,7 @@ reject_button_config = {
     "y1": btn_dim + 2 * MARGIN,
     "colour": DELETE_BG,
     "response": "discard",
-    "image": "/home/pi/pi-camera-gui/resources/delete.png"
+    "image": DELETE_IMG
     }
 
 accept_button_config = {
@@ -288,7 +297,7 @@ accept_button_config = {
     "y1": MARGIN,
     "colour": SAVE_BG,
     "response": "save",
-    "image": "/home/pi/pi-camera-gui/resources/like.png"
+    "image": SAVE_IMG
     }
 
 save_msg_config = {
@@ -321,7 +330,7 @@ exit_button_config = {
     "y1": 0,
     "colour": (255, 255, 255),
     "response": "exit",
-    "image": "/home/pi/pi-camera-gui/resources/close.png",
+    "image": CLOSE_IMG,
     "alpha": None
     }
 
